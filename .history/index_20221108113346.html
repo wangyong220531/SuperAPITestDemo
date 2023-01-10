@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="http://superapi.51aes.com/dist/superAPI.min.js"></script>
+    <title">Hello 51WORLD!</title>
+</head>
+<body>
+    <div id="player" style="display:none;"></div>
+    <button class="btn" onclick="AddPOI()">添加点</button>
+
+<script>
+  var cloudRender = new cloudRenderer("player", 0);
+  let cloudurl = "http://172.31.9.112:8889", //云渲染服务地址, 8889:固定端口
+      orderID = "2b81C411"; //渲染口令, 在云渲染客户端上获得
+
+  fetch(`${cloudurl}/Renderers/Any/order`, {
+        method: "POST",
+        headers: { "Content-type": "application/json" },
+        body: JSON.stringify({order:orderID, width:window.innerWidth, height:window.innerHeight})
+        //① order 渲染口令必填; ② width, height: 设置云渲染输出分辨率(此设置为固定分辨率,可选; 默认以云渲染客户端设置的分辨率输出)
+    }).then(res => {
+        if (!res.ok) { throw Error(res.statusText) }
+        return res.json()
+    }).then(json => {
+        if (json.url) {
+
+            //启动云渲染
+            cloudRender.SuperAPI("StartRenderCloud", json.url);
+
+            //事件注册
+            cloudRender.SuperAPI("RegisterCloudResponse", myHandleResponseFunction);
+        }
+    });
+
+    function AddPOI() {
+        let jsondata = {
+            "id": "poi_id",
+            "label": "Hello 51WORLD！",
+            "coord_type": 0,
+            "cad_mapkey": "",
+            "coord": "103.995697,1.399239",
+            "coord_z": 150,
+            "coord_z_type": 0,
+            "always_show_label": true,
+            "show_label_range": "0,2000",
+            "umg_type": "default",
+            "sort_order": true
+        }
+
+        cloudRender.SuperAPI("AddPOI", jsondata, (status) => {
+            console.log(status); //成功、失败回调
+        })
+    }
+
+    AddPOI()
+</script>
+</body>
+</html>
